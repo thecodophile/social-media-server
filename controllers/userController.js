@@ -64,4 +64,7 @@ const getPostsOfFollowing = async (req, res) => {
 module.exports = {
   followOrUnfollowUserController,
   getPostsOfFollowing,
+  //getMyPosts
+  //getUserPosts
+  //deleteMyProfile
 };

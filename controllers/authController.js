@@ -105,6 +105,18 @@ const refreshAccessTokenController = async (req, res) => {
   }
 };
 
+const logoutController = async (req, res) => {
+  try {
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.send(success(200, "user logged out"));
+  } catch (e) {
+    return res.send(error(500, e.message));
+  }
+};
+
 //internal function
 const generateAccessToken = (data) => {
   try {
@@ -134,4 +146,5 @@ module.exports = {
   signupController,
   loginController,
   refreshAccessTokenController,
+  logoutController,
 };
