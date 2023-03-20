@@ -92,10 +92,60 @@ const getUserPosts = async (req, res) => {
   }
 };
 
+const deleteMyProfile = async (req, res) => {
+  try {
+    const curUserId = req._id;
+    const curUser = await User.findById(curUserId);
+
+    // delete all posts
+    await Post.deleteMany({
+      owner: curUserId,
+    });
+
+    //remove myself from followers' following
+    //is user ki followers ke andar jitne vi log hai unke andar jana hai, or un savi logo ki followings ki andar se is user ki entry ko delete kar dena hai
+    curUser.followers.forEach(async (followerId) => {
+      const follower = await User.findById(followerId);
+      const index = follower.followings.indexOf(curUserId);
+      follower.followings.splice(index, 1);
+      await follower.save();
+    });
+
+    //remove myself from my followings' follwers
+    curUser.followings.forEach(async (followingId) => {
+      const following = await User.findById(followingId);
+      const index = following.followers.indexOf(curUserId);
+      following.followers.splice(index, 1);
+      await following.save();
+    });
+
+    //remove myself from all likes
+    const allPosts = await Post.find();
+    allPosts.forEach(async (post) => {
+      const index = post.likes.indexOf(curUserId);
+      post.likes.splice(index, 1);
+      await post.save();
+    });
+
+    //delete user
+    await curUser.remove();
+
+    //clear cookie
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sucure: true,
+    });
+
+    return res.send(success(200, "user deleted"));
+  } catch (e) {
+    return res.send(error(500, e.message));
+  }
+};
+
 module.exports = {
   followOrUnfollowUserController,
   getPostsOfFollowing,
   getMyPosts,
   getUserPosts,
-  //deleteMyProfile
+  deleteMyProfile,
 };
