@@ -13,5 +13,6 @@ router.get(
   UserController.getPostsOfFollowing
 );
 router.get("/getMyPosts", requireUser, UserController.getMyPosts);
+router.get("/getUserPosts", requireUser, UserController.getUserPosts);
 
 module.exports = router;
