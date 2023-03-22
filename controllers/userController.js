@@ -1,6 +1,7 @@
 const Post = require("../models/Post");
 const User = require("../models/User");
 const { error, success } = require("../utils/responseWrapper");
+const { mapPostOutput } = require("../utils/Utils");
 const cloudinary = require("cloudinary").v2;
 
 const followOrUnfollowUserController = async (req, res) => {
@@ -181,6 +182,27 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const user = await User.findById(userId).populate({
+      path: "posts",
+      populate: {
+        path: "owner",
+      },
+    });
+
+    const fullPosts = user.posts;
+    const posts = fullPosts
+      .map((item) => mapPostOutput(item, req._id))
+      .reverse();
+
+    return res.send(success(200, { ...user._doc, posts }));
+  } catch (e) {
+    return res.send(error(500, e.message));
+  }
+};
+
 module.exports = {
   followOrUnfollowUserController,
   getPostsOfFollowing,
@@ -189,4 +211,5 @@ module.exports = {
   deleteMyProfile,
   getMyInfo,
   updateUserProfile,
+  getUserProfile,
 };
